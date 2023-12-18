@@ -19,7 +19,7 @@ async function performTransaction(walletInfo, numberOfTimes) {
     let successCount = 0;
     let attemptCount = 0;
 
-    const tick = process.env.TICK 
+    const tick = process.env.TICK
     const protocol = process.env.PROTOCOL
     const mintAmount = parseInt(process.env.MINT_AMOUNT)
 
@@ -28,9 +28,10 @@ async function performTransaction(walletInfo, numberOfTimes) {
             const [account] = await wallet.getAccounts();
             const amount = coins(1, denom); // 自转1,按需修改
             const memo = `data:,{"op":"mint","amt":${mintAmount},"tick":"${tick}","p":"${protocol}"}`; // 这里可能会变化
-            console.log(`memo = ${memo}`);
-
-            const result = await client.sendTokens(account.address, account.address, amount, fee, base64FromBytes(Buffer.from(memo, 'utf8')));
+            //console.log(`memo = ${memo}`);
+            const memo1 = "ZGF0YToseyJvcCI6Im1pbnQiLCJhbXQiOjEwMDAwLCJ0aWNrIjoiY2lhcyIsInAiOiJjaWEtMjAifQ==";
+            const result = await client.sendTokens(account.address, account.address, amount, fee,memo1);
+            //const result = await client.sendTokens(account.address, account.address, amount, fee, base64FromBytes(Buffer.from(memo, 'utf8')));
             console.log(`${account.address}, 第 ${successCount + 1} 次操作成功: ${`https://www.mintscan.io/${chain}/tx/` + result.transactionHash}`);
             successCount++;
         } catch (error) {
@@ -56,18 +57,18 @@ async function main() {
         console.log(`未找到 ${walletsFile}, 仅使用配置的主钱包`);
     }
 
-    const privateKey = process.env.PRIVATE_KEY;
-    const wallet = await DirectSecp256k1Wallet.fromKey(Buffer.from(privateKey, "hex"), chain);
-    const [account] = await wallet.getAccounts();
-    const walletAddress = account.address;
-
-    const client = await SigningStargateClient.connectWithSigner(process.env.NODE_URL, wallet);
-    const balance = await client.getBalance(walletAddress, denom);
-    console.log(`地址: ${walletAddress} 余额: ${parseFloat(balance.amount) / tokenDecimal}`);
-    walletData.push(    {
-        "address": walletAddress,
-        "privateKey": privateKey
-    });
+    // const privateKey = process.env.PRIVATE_KEY;
+    // const wallet = await DirectSecp256k1Wallet.fromKey(Buffer.from(privateKey, "hex"), chain);
+    // const [account] = await wallet.getAccounts();
+    // const walletAddress = account.address;
+    //
+    // const client = await SigningStargateClient.connectWithSigner(process.env.NODE_URL, wallet);
+    // const balance = await client.getBalance(walletAddress, denom);
+    // console.log(`地址: ${walletAddress} 余额: ${parseFloat(balance.amount) / tokenDecimal}`);
+    // walletData.push(    {
+    //     "address": walletAddress,
+    //     "privateKey": privateKey
+    // });
     Promise.all(walletData.map(wallet => performTransaction(wallet, parseInt(process.env.MINT_TIMES))))
         .then(() => {
             console.log("所有操作完成");
